@@ -355,6 +355,13 @@ fromCode browser =
             fromCodeBasic notFireFoxCodeDict
 
 
+fromCodeBasic : Dict KeyCode Key -> KeyCode -> Key
+fromCodeBasic dict keyCode =
+    dict
+        |> Dict.get keyCode
+        |> Maybe.withDefault Other
+
+
 {-| Convert a `Key` into a key code.
 
     toCode Chrome Enter  --> 13
@@ -363,7 +370,7 @@ fromCode browser =
 
 -}
 toCode : Browser -> Key -> KeyCode
-toCode browser key =
+toCode browser =
     case browser of
         FireFox ->
             toCodeBasic fireFoxCodeBook
@@ -566,7 +573,7 @@ fireFoxCodeDict =
 
 notFireFoxCodeDict : Dict KeyCode Key
 notFireFoxCodeDict =
-    Dict.fromList notFixFoxCodeBook
+    Dict.fromList notFireFoxCodeBook
 
 
 notFireFoxCodeBook : List ( Int, Key )
@@ -574,7 +581,7 @@ notFireFoxCodeBook =
     [ ( 173, VolumeMute )
     , ( 174, VolumeDown )
     , ( 175, VolumeUp )
-    , ( 186, SemiColon )
+    , ( 186, Semicolon )
     , ( 187, Equals )
     , ( 189, HyphenMinus )
     ]
@@ -586,7 +593,7 @@ fireFoxCodeBook =
     [ ( 181, VolumeMute )
     , ( 182, VolumeDown )
     , ( 183, VolumeUp )
-    , ( 59, SemiColon )
+    , ( 59, Semicolon )
     , ( 61, Equals )
     , ( 173, HyphenMinus )
     ]

@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.2",
     "summary": "Convenience helpers for working with Keyboard with browser support",
     "repository": "https://github.com/Chadtech/keyboard-extra-browser.git",
     "license": "BSD3",
