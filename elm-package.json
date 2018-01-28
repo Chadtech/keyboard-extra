@@ -1,13 +1,13 @@
 {
-    "version": "3.0.4",
-    "summary": "Convenience helpers for working with Keyboard",
-    "repository": "https://github.com/ohanhi/keyboard-extra.git",
+    "version": "1.0.0",
+    "summary": "Convenience helpers for working with Keyboard with browser support",
+    "repository": "https://github.com/Chadtech/keyboard-extra-browser.git",
     "license": "BSD3",
     "source-directories": [
         "src"
     ],
     "exposed-modules": [
-        "Keyboard.Extra"
+        "Keyboard.Extra.Browser"
     ],
     "dependencies": {
         "elm-lang/core": "5.0.0 <= v < 6.0.0",

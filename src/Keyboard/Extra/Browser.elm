@@ -1,6 +1,7 @@
-module Keyboard.Extra
+module Keyboard.Extra.Browser
     exposing
         ( Arrows
+        , Browser(..)
         , Direction(..)
         , Key(..)
         , KeyChange(..)
@@ -20,6 +21,11 @@ module Keyboard.Extra
         )
 
 {-| Convenience helpers for working with keyboard inputs.
+
+
+# Browser
+
+@docs Browser
 
 
 # Msg and Update
@@ -66,22 +72,32 @@ import Json.Decode as Json
 import Keyboard exposing (KeyCode)
 
 
+{-| This type represents what browser the user is in. Presumably you would figure this information out in JavaScript using `navigator.userAgent`, and then pass it into your app as flags.
+-}
+type Browser
+    = Opera
+    | InternetExplorer
+    | FireFox
+    | Safari
+    | Chrome
+
+
 {-| Subscription for key down events.
 
 **Note** When the user presses and holds a key, there may or may not be many of
 these messages before the corresponding key up message.
 
 -}
-downs : (Key -> msg) -> Sub msg
-downs toMsg =
-    Keyboard.downs (toMsg << fromCode)
+downs : Browser -> (Key -> msg) -> Sub msg
+downs browser toMsg =
+    Keyboard.downs (toMsg << fromCode browser)
 
 
 {-| Subscription for key up events.
 -}
-ups : (Key -> msg) -> Sub msg
-ups toMsg =
-    Keyboard.ups (toMsg << fromCode)
+ups : Browser -> (Key -> msg) -> Sub msg
+ups browser toMsg =
+    Keyboard.ups (toMsg << fromCode browser)
 
 
 {-| `Keyboard.Extra`'s internal message type.
@@ -100,11 +116,11 @@ type alias Arrows =
 
 {-| The subscriptions needed for the "Msg and Update" way.
 -}
-subscriptions : Sub Msg
-subscriptions =
+subscriptions : Browser -> Sub Msg
+subscriptions browser =
     Sub.batch
-        [ Keyboard.downs (Down << fromCode)
-        , Keyboard.ups (Up << fromCode)
+        [ Keyboard.downs (Down << fromCode browser)
+        , Keyboard.ups (Up << fromCode browser)
         ]
 
 
@@ -324,23 +340,40 @@ arrowsToDir { x, y } =
 
 {-| Convert a key code into a `Key`.
 
-    fromCode 13  --> Enter
+    fromCode Chrome 13  --> Enter
+    fromCode Chrome 173 --> VolumeMute
+    fromCode FireFox 173 --> HyphenMinus
 
 -}
-fromCode : KeyCode -> Key
-fromCode code =
-    codeDict
-        |> Dict.get code
-        |> Maybe.withDefault Other
+fromCode : Browser -> KeyCode -> Key
+fromCode browser =
+    case browser of
+        FireFox ->
+            fromCodeBasic fireFoxCodeDict
+
+        _ ->
+            fromCodeBasic notFireFoxCodeDict
 
 
 {-| Convert a `Key` into a key code.
 
-    toCode Enter  --> 13
+    toCode Chrome Enter  --> 13
+    toCode Chrome Equals --> 187
+    toCode FireFox Equals --> 61
 
 -}
-toCode : Key -> KeyCode
-toCode key =
+toCode : Browser -> Key -> KeyCode
+toCode browser key =
+    case browser of
+        FireFox ->
+            toCodeBasic fireFoxCodeBook
+
+        _ ->
+            toCodeBasic notFireFoxCodeBook
+
+
+toCodeBasic : List ( Int, Key ) -> Key -> KeyCode
+toCodeBasic codeBook key =
     codeBook
         |> List.filter ((==) key << Tuple.second)
         |> List.map Tuple.first
@@ -354,12 +387,12 @@ toCode key =
 
     onKey : (Key -> msg) -> Attribute msg
     onKey tagger =
-        on "keydown" (Json.map tagger targetKey)
+        on "keydown" (Json.map tagger (targetKey Chrome))
 
 -}
-targetKey : Json.Decoder Key
-targetKey =
-    Json.map fromCode (Json.field "keyCode" Json.int)
+targetKey : Browser -> Json.Decoder Key
+targetKey browser =
+    Json.map (fromCode browser) (Json.field "keyCode" Json.int)
 
 
 boolToInt : Bool -> Int
@@ -526,13 +559,42 @@ type Key
     | Other
 
 
-codeDict : Dict KeyCode Key
-codeDict =
-    Dict.fromList codeBook
+fireFoxCodeDict : Dict KeyCode Key
+fireFoxCodeDict =
+    Dict.fromList fireFoxCodeBook
 
 
-codeBook : List ( KeyCode, Key )
-codeBook =
+notFireFoxCodeDict : Dict KeyCode Key
+notFireFoxCodeDict =
+    Dict.fromList notFixFoxCodeBook
+
+
+notFireFoxCodeBook : List ( Int, Key )
+notFireFoxCodeBook =
+    [ ( 173, VolumeMute )
+    , ( 174, VolumeDown )
+    , ( 175, VolumeUp )
+    , ( 186, SemiColon )
+    , ( 187, Equals )
+    , ( 189, HyphenMinus )
+    ]
+        ++ basicCodeBook
+
+
+fireFoxCodeBook : List ( Int, Key )
+fireFoxCodeBook =
+    [ ( 181, VolumeMute )
+    , ( 182, VolumeDown )
+    , ( 183, VolumeUp )
+    , ( 59, SemiColon )
+    , ( 61, Equals )
+    , ( 173, HyphenMinus )
+    ]
+        ++ basicCodeBook
+
+
+basicCodeBook : List ( KeyCode, Key )
+basicCodeBook =
     [ ( 3, Cancel )
     , ( 6, Help )
     , ( 8, BackSpace )
@@ -575,9 +637,7 @@ codeBook =
     , ( 56, Number8 )
     , ( 57, Number9 )
     , ( 58, Colon )
-    , ( 59, Semicolon )
     , ( 60, LessThan )
-    , ( 61, Equals )
     , ( 62, GreaterThan )
     , ( 63, QuestionMark )
     , ( 64, At )
@@ -665,15 +725,9 @@ codeBook =
     , ( 170, Asterisk )
     , ( 171, Plus )
     , ( 172, Pipe )
-    , ( 173, HyphenMinus )
     , ( 174, OpenCurlyBracket )
     , ( 175, CloseCurlyBracket )
     , ( 176, Tilde )
-    , ( 181, VolumeMute )
-    , ( 182, VolumeDown )
-    , ( 183, VolumeUp )
-    , ( 186, Semicolon )
-    , ( 187, Equals )
     , ( 188, Comma )
     , ( 189, Minus )
     , ( 190, Period )

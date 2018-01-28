@@ -1,3 +1,10 @@
+# Keyboard Extra Browser
+
+This is a fork of ohanhi's super great keyboard package Keyboard-Extra. Why did I fork it? Keycodes vary between browsers, and ohanhi's Keyboard-Extra library basically assumes the Firefox browser environment. That wasnt working for a project of mine, so I had to figure out a solution. The solution I came to was making a `Browser` union type that must be used whenever mapping from keys to keycodes or vice versa. This solution is a pretty big divergence, and since my use case doesnt seem to be representative, I forked it instead of submitting a pull request. The browser keycode differences exist only for the semi-colon, minus, and equal sign keys anyway.
+
+Below is the Keyboard Extra readme from Ohanhi's original Keyboard-Extra.
+
+
 # Keyboard Extra
 
 Nice keyboard inputs in Elm.
